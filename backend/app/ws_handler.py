@@ -37,13 +37,25 @@ async def voice_websocket(ws: WebSocket):
         })
 
         if name == "create_calendar_event":
-            # Placeholder — real calendar integration comes in Step 6
-            logger.info(f"Schedule request: {args}")
-            await send_json({
-                "type": "schedule_confirmed",
-                "data": args,
-            })
-            return {"status": "success", "message": f"Meeting scheduled for {args.get('name', 'user')}"}
+            try:
+                logger.info(f"Schedule request: {args}")
+                # Placeholder — real Google Calendar integration in Step 6
+                # For now, simulate success so end-to-end flow works
+                await send_json({
+                    "type": "schedule_confirmed",
+                    "data": args,
+                })
+                return {
+                    "status": "success",
+                    "message": f"Meeting '{args.get('title', 'Meeting')}' scheduled for {args.get('name', 'user')} on {args.get('date')} at {args.get('time')}.",
+                }
+            except Exception as e:
+                logger.error(f"Failed to create event: {e}")
+                await send_json({
+                    "type": "schedule_error",
+                    "error": str(e),
+                })
+                return {"status": "error", "message": f"Failed to create event: {e}"}
 
         return {"status": "error", "message": f"Unknown function: {name}"}
 

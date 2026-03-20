@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { AudioCapture, AudioPlayer } from "@/lib/audio";
 import type { TranscriptMessage } from "@/components/TranscriptPanel";
 import type { ScheduleInfo } from "@/components/ScheduleCard";
@@ -6,11 +7,12 @@ import type { ScheduleInfo } from "@/components/ScheduleCard";
 const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/voice";
 
 interface ServerMessage {
-  type: "audio" | "transcript" | "schedule_update" | "schedule_confirmed" | "status";
+  type: "audio" | "transcript" | "schedule_update" | "schedule_confirmed" | "schedule_error" | "status";
   data?: string | Record<string, string>;
   role?: "user" | "assistant";
   text?: string;
   status?: string;
+  error?: string;
   function?: string;
 }
 
@@ -79,10 +81,21 @@ export function useVoiceAgent() {
 
         case "schedule_confirmed":
           setScheduleInfo((prev) => ({ ...prev, confirmed: true }));
+          toast.success("Meeting scheduled successfully!", {
+            description: `Your meeting has been added to the calendar.`,
+          });
+          break;
+
+        case "schedule_error":
+          toast.error("Failed to schedule meeting", {
+            description: msg.error || "Please try again.",
+          });
           break;
 
         case "status":
-          if (msg.status === "disconnected") {
+          if (msg.status === "connected") {
+            toast.info("Voice agent connected");
+          } else if (msg.status === "disconnected") {
             setIsActive(false);
           }
           break;

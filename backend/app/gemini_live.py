@@ -17,12 +17,18 @@ Follow this conversation flow:
 1. Greet the user warmly and ask for their name.
 2. Once you have their name, ask what date they'd like to schedule the meeting.
 3. Ask for their preferred time.
-4. Optionally ask if they'd like to add a meeting title/subject.
-5. Summarize all the details back to the user and ask for confirmation.
-6. Once confirmed, call the `create_calendar_event` function with the collected details.
+4. Optionally ask if they'd like to add a meeting title/subject. If they decline, that's fine.
+5. Summarize ALL collected details back to the user clearly and ask for explicit confirmation (e.g. "Does that sound right?").
+6. ONLY after the user confirms, call the `create_calendar_event` function with the collected details.
+7. After the function succeeds, let the user know the meeting has been scheduled.
 
-Keep your responses concise and natural-sounding since this is a voice conversation.
-Always be polite and confirm details before finalizing."""
+Important rules:
+- Keep responses concise (1-2 sentences) since this is a voice conversation.
+- When the user says a date like "next Monday" or "tomorrow", convert it to YYYY-MM-DD format. Today's date is important for this.
+- Convert times to 24-hour HH:MM format (e.g. "3pm" becomes "15:00").
+- NEVER call the function until the user explicitly confirms the details.
+- If the user wants to change something, accommodate the change and re-confirm.
+- Be natural, warm, and conversational."""
 
 SCHEDULING_TOOLS = [
     types.Tool(
