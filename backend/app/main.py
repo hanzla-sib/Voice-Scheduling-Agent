@@ -1,7 +1,12 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.ws_handler import router as ws_router
+
+logging.basicConfig(level=logging.INFO)
 
 settings = get_settings()
 
@@ -18,6 +23,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ws_router)
 
 
 @app.get("/health")
