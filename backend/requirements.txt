@@ -1,0 +1,10 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+websockets>=14.0
+google-genai>=1.0.0
+google-auth>=2.38.0
+google-auth-oauthlib>=1.2.0
+google-api-python-client>=2.160.0
+python-dotenv>=1.0.1
+pydantic>=2.10.0
+pydantic-settings>=2.7.0
