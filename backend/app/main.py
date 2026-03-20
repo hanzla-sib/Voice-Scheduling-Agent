@@ -30,3 +30,35 @@ app.include_router(ws_router)
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "voice-scheduling-agent"}
+
+
+@app.get("/api/calendar/status")
+async def calendar_status():
+    """Check if Google Calendar is configured and authorized."""
+    import os
+    settings = get_settings()
+    has_credentials = os.path.exists(settings.google_calendar_credentials_path)
+    has_token = os.path.exists("token.json")
+    return {
+        "credentials_file": has_credentials,
+        "authorized": has_token,
+        "instructions": (
+            "1. Go to Google Cloud Console > APIs & Services > Credentials. "
+            "2. Create an OAuth 2.0 Client ID (Desktop app). "
+            "3. Download the JSON and save as 'credentials.json' in the backend/ folder. "
+            "4. Run the server and call POST /api/calendar/authorize to complete OAuth."
+        ) if not has_credentials else None,
+    }
+
+
+@app.post("/api/calendar/authorize")
+async def calendar_authorize():
+    """Trigger the Google Calendar OAuth flow (opens browser)."""
+    try:
+        from app.calendar_service import _get_calendar_service
+        _get_calendar_service()
+        return {"status": "ok", "message": "Google Calendar authorized successfully."}
+    except FileNotFoundError as e:
+        return {"status": "error", "message": str(e)}
+    except Exception as e:
+        return {"status": "error", "message": f"Authorization failed: {e}"}

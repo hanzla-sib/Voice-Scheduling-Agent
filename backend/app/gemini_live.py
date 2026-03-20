@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import base64
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from google import genai
 from google.genai import types
@@ -64,7 +66,7 @@ class GeminiLiveSession:
         self.on_tool_call = on_tool_call
         self.on_status = on_status
         self._session = None
-        self._receive_task: asyncio.Task | None = None
+        self._receive_task: Optional[asyncio.Task] = None
         self._running = False
 
     async def connect(self):

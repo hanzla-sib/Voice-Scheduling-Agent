@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.gemini_live import GeminiLiveSession
+from app.calendar_service import create_event
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -15,7 +18,7 @@ async def voice_websocket(ws: WebSocket):
     await ws.accept()
     logger.info("Client WebSocket connected")
 
-    session: GeminiLiveSession | None = None
+    session: Optional[GeminiLiveSession] = None
 
     async def send_json(msg: dict):
         try:
@@ -39,15 +42,19 @@ async def voice_websocket(ws: WebSocket):
         if name == "create_calendar_event":
             try:
                 logger.info(f"Schedule request: {args}")
-                # Placeholder — real Google Calendar integration in Step 6
-                # For now, simulate success so end-to-end flow works
+                event = create_event(
+                    name=args.get("name", ""),
+                    date=args.get("date", ""),
+                    time=args.get("time", ""),
+                    title=args.get("title"),
+                )
                 await send_json({
                     "type": "schedule_confirmed",
-                    "data": args,
+                    "data": {**args, "event_link": event.get("link", "")},
                 })
                 return {
                     "status": "success",
-                    "message": f"Meeting '{args.get('title', 'Meeting')}' scheduled for {args.get('name', 'user')} on {args.get('date')} at {args.get('time')}.",
+                    "message": f"Meeting '{event.get('summary')}' created successfully. Calendar link: {event.get('link', 'N/A')}",
                 }
             except Exception as e:
                 logger.error(f"Failed to create event: {e}")
