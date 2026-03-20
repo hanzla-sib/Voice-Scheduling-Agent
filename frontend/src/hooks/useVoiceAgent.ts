@@ -4,7 +4,14 @@ import { AudioCapture, AudioPlayer } from "@/lib/audio";
 import type { TranscriptMessage } from "@/components/TranscriptPanel";
 import type { ScheduleInfo } from "@/components/ScheduleCard";
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/voice";
+function getWsUrl(): string {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  if (import.meta.env.DEV) return "ws://localhost:8000/ws/voice";
+  return `${protocol}//${window.location.host}/ws/voice`;
+}
+
+const WS_URL = getWsUrl();
 
 interface ServerMessage {
   type: "audio" | "transcript" | "schedule_update" | "schedule_confirmed" | "schedule_error" | "status";

@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    environment:
+      - SERVE_FRONTEND=true
+      - FRONTEND_DIST_PATH=./frontend/dist
+    volumes:
+      - ./backend/credentials.json:/app/credentials.json:ro
+      - ./backend/token.json:/app/token.json
+    restart: unless-stopped

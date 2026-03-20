@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash-native-audio-preview-12-2025"
     google_calendar_credentials_path: str = "credentials.json"
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    serve_frontend: bool = False
+    frontend_dist_path: str = "../frontend/dist"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

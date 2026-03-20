@@ -1,7 +1,10 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import get_settings
 from app.ws_handler import router as ws_router
@@ -62,3 +65,17 @@ async def calendar_authorize():
         return {"status": "error", "message": str(e)}
     except Exception as e:
         return {"status": "error", "message": f"Authorization failed: {e}"}
+
+
+# Serve frontend static files in production
+if settings.serve_frontend:
+    dist_path = os.path.abspath(settings.frontend_dist_path)
+    if os.path.isdir(dist_path):
+        app.mount("/assets", StaticFiles(directory=os.path.join(dist_path, "assets")), name="assets")
+
+        @app.get("/{full_path:path}")
+        async def serve_spa(full_path: str):
+            file_path = os.path.join(dist_path, full_path)
+            if os.path.isfile(file_path):
+                return FileResponse(file_path)
+            return FileResponse(os.path.join(dist_path, "index.html"))
