@@ -1,21 +1,14 @@
-import { useState } from "react";
 import { motion } from "motion/react";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { MicButton } from "./MicButton";
-import { TranscriptPanel, type TranscriptMessage } from "./TranscriptPanel";
-import { ScheduleCard, type ScheduleInfo } from "./ScheduleCard";
+import { TranscriptPanel } from "./TranscriptPanel";
+import { ScheduleCard } from "./ScheduleCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 
 export function VoiceAgent() {
-  const [isActive, setIsActive] = useState(false);
-  const [isConnecting] = useState(false);
-  const [messages] = useState<TranscriptMessage[]>([]);
-  const [scheduleInfo] = useState<ScheduleInfo>({});
-
-  const handleMicToggle = () => {
-    setIsActive((prev) => !prev);
-  };
+  const { isActive, isConnecting, messages, scheduleInfo, toggle } = useVoiceAgent();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -39,15 +32,21 @@ export function VoiceAgent() {
             className={`mt-3 text-xs ${
               isActive
                 ? "border-emerald-500/50 text-emerald-400"
+                : isConnecting
+                ? "border-amber-500/50 text-amber-400"
                 : "border-zinc-700 text-zinc-500"
             }`}
           >
             <span
               className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${
-                isActive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"
+                isActive
+                  ? "bg-emerald-400 animate-pulse"
+                  : isConnecting
+                  ? "bg-amber-400 animate-pulse"
+                  : "bg-zinc-600"
               }`}
             />
-            {isActive ? "Listening..." : "Inactive"}
+            {isActive ? "Listening..." : isConnecting ? "Connecting..." : "Inactive"}
           </Badge>
         </motion.div>
 
@@ -61,7 +60,7 @@ export function VoiceAgent() {
           <MicButton
             isActive={isActive}
             isConnecting={isConnecting}
-            onClick={handleMicToggle}
+            onClick={toggle}
           />
         </motion.div>
 
