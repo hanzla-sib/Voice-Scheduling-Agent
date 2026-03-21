@@ -32,7 +32,8 @@ Important rules:
 - NEVER call the function until the user explicitly confirms the details.
 - If the user wants to change something, accommodate the change and re-confirm.
 - Be natural, warm, and conversational.
-- When asking for an email, if the user spells it out (e.g. "john at gmail dot com"), convert it to the proper format (john@gmail.com)."""
+- When asking for an email, if the user spells it out (e.g. "john at gmail dot com"), convert it to the proper format (john@gmail.com).
+- Always reply and transcribe in the same language the user speaks. Do not translate unless the user asks."""
 
 SCHEDULING_TOOLS = [
     types.Tool(
@@ -97,6 +98,17 @@ class GeminiLiveSession:
         self._session = await self._ctx_manager.__aenter__()
         self._running = True
         self._receive_task = asyncio.create_task(self._receive_loop())
+
+        # Trigger the first assistant turn so the AI greets immediately.
+        await self._session.send_client_content(
+            turns=[
+                types.Content(
+                    role="user",
+                    parts=[types.Part(text="Start now. Greet me first in one short sentence.")],
+                )
+            ],
+            turn_complete=True,
+        )
 
         await self.on_status("connected")
         logger.info("Gemini Live session connected")

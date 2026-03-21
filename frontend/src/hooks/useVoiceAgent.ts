@@ -167,7 +167,11 @@ export function useVoiceAgent() {
         }
       };
 
-      ws.send(JSON.stringify({ type: "start" }));
+      const browserLanguage =
+        (Array.isArray(navigator.languages) && navigator.languages.length > 0
+          ? navigator.languages[0]
+          : navigator.language) || "en-US";
+      ws.send(JSON.stringify({ type: "start", language: browserLanguage }));
 
       capture.onAudioData = (b64) => {
         if (ws.readyState === WebSocket.OPEN) {
