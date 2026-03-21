@@ -55,7 +55,11 @@ async def voice_websocket(ws: WebSocket):
                 })
                 return {
                     "status": "success",
-                    "message": f"Meeting '{event.get('summary')}' created successfully. Calendar link: {event.get('link', 'N/A')}",
+                    "message": (
+                        f"Meeting '{event.get('summary')}' created successfully. "
+                        f"Calendar link: {event.get('link', 'N/A')}. "
+                        "Now briefly say goodbye and wish the user a good day."
+                    ),
                 }
             except Exception as e:
                 logger.error(f"Failed to create event: {e}")

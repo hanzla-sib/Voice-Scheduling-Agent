@@ -31,6 +31,26 @@ body {
   50% { height: 20px; }
 }
 
+@keyframes aurora {
+  0% {
+    transform: translate3d(-10%, -8%, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: translate3d(8%, 6%, 0) scale(1.08);
+    filter: hue-rotate(20deg);
+  }
+  100% {
+    transform: translate3d(-10%, -8%, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
@@ -40,11 +60,23 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
+.aurora-layer {
+  position: absolute;
+  inset: -25%;
+  background: radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.25), transparent 40%),
+    radial-gradient(circle at 70% 35%, rgba(99, 102, 241, 0.22), transparent 40%),
+    radial-gradient(circle at 45% 75%, rgba(168, 85, 247, 0.2), transparent 45%);
+  filter: blur(40px);
+  animation: aurora 14s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .glass {
   background: rgba(24, 24, 27, 0.6);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
 }
 
 .glass-light {
@@ -66,6 +98,26 @@ body {
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: rgba(113, 113, 122, 0.5);
+}
+
+.shimmer-border {
+  position: relative;
+}
+
+.shimmer-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0), rgba(167, 139, 250, 0.55), rgba(255, 255, 255, 0));
+  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 @theme inline {

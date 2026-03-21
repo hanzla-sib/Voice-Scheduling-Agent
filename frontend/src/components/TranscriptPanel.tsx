@@ -14,17 +14,23 @@ interface TranscriptPanelProps {
 }
 
 export function TranscriptPanel({ messages }: TranscriptPanelProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto max-h-[380px] pr-1 scrollbar-thin">
-      <AnimatePresence mode="popLayout">
+    <div
+      ref={scrollRef}
+      className="flex flex-col gap-3 overflow-y-auto overflow-x-hidden h-full pr-1 scrollbar-thin"
+    >
+      <AnimatePresence initial={false}>
         {messages.length === 0 && (
           <motion.div
+            key="empty"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-12 gap-3"
@@ -47,19 +53,16 @@ export function TranscriptPanel({ messages }: TranscriptPanelProps) {
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+            layout="position"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`flex gap-2.5 min-w-0 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
           >
             <div
               className={`
                 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5
-                ${msg.role === "user"
-                  ? "bg-violet-600/20"
-                  : "bg-zinc-700/50"
-                }
+                ${msg.role === "user" ? "bg-violet-600/20" : "bg-zinc-700/50"}
               `}
             >
               {msg.role === "user" ? (
@@ -69,13 +72,14 @@ export function TranscriptPanel({ messages }: TranscriptPanelProps) {
               )}
             </div>
 
-            <div className={`flex flex-col gap-1 max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
+            <div className={`flex flex-col gap-1 min-w-0 max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
               <span className="text-[10px] font-medium tracking-wide uppercase text-zinc-600 px-1">
                 {msg.role === "user" ? "You" : "Assistant"}
               </span>
               <div
                 className={`
                   rounded-2xl px-4 py-2.5 text-sm leading-relaxed
+                  break-words overflow-hidden
                   ${msg.role === "user"
                     ? "bg-violet-600/90 text-white rounded-tr-sm"
                     : "glass-light text-zinc-200 rounded-tl-sm"
@@ -88,7 +92,6 @@ export function TranscriptPanel({ messages }: TranscriptPanelProps) {
           </motion.div>
         ))}
       </AnimatePresence>
-      <div ref={bottomRef} />
     </div>
   );
 }
