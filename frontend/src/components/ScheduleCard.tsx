@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TitleIcon from "@mui/icons-material/Title";
@@ -11,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 
 export interface ScheduleInfo {
   name?: string;
+  email?: string;
   date?: string;
   time?: string;
   title?: string;
@@ -24,6 +26,7 @@ interface ScheduleCardProps {
 
 const fields = [
   { key: "name" as const, label: "Name", icon: PersonIcon },
+  { key: "email" as const, label: "Email", icon: EmailIcon },
   { key: "date" as const, label: "Date", icon: CalendarTodayIcon },
   { key: "time" as const, label: "Time", icon: AccessTimeIcon },
   { key: "title" as const, label: "Title", icon: TitleIcon },

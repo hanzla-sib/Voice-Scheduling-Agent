@@ -43,6 +43,7 @@ yarn-error.log*
 
 # Google Calendar credentials (sensitive)
 credentials.json
+service-account.json
 token.json
 token.pickle
 

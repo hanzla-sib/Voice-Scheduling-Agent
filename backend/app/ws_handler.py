@@ -47,6 +47,7 @@ async def voice_websocket(ws: WebSocket):
                     date=args.get("date", ""),
                     time=args.get("time", ""),
                     title=args.get("title"),
+                    email=args.get("email"),
                 )
                 await send_json({
                     "type": "schedule_confirmed",
@@ -84,7 +85,15 @@ async def voice_websocket(ws: WebSocket):
                     on_tool_call=on_tool_call,
                     on_status=on_status,
                 )
-                await session.connect()
+                try:
+                    await session.connect()
+                except Exception as e:
+                    logger.error(f"Failed to connect Gemini session: {e}")
+                    await send_json({
+                        "type": "error",
+                        "error": str(e),
+                    })
+                    session = None
 
             elif msg_type == "audio" and session:
                 await session.send_audio(msg["data"])

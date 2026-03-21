@@ -13,16 +13,17 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_INSTRUCTION = """You are a friendly and professional voice scheduling assistant. Your job is to help users schedule meetings.
+SYSTEM_INSTRUCTION = """You are a friendly and professional voice scheduling assistant. Your job is to help users schedule meetings on the host's Google Calendar.
 
 Follow this conversation flow:
 1. Greet the user warmly and ask for their name.
-2. Once you have their name, ask what date they'd like to schedule the meeting.
-3. Ask for their preferred time.
-4. Optionally ask if they'd like to add a meeting title/subject. If they decline, that's fine.
-5. Summarize ALL collected details back to the user clearly and ask for explicit confirmation (e.g. "Does that sound right?").
-6. ONLY after the user confirms, call the `create_calendar_event` function with the collected details.
-7. After the function succeeds, let the user know the meeting has been scheduled.
+2. Ask for their email address so they can receive a calendar invite and after getting email, you ahve to spell the email correctly back to user and confirm and ask if proceed with the meeting scheduling, change the email or correct it.
+3. Ask what date they'd like to schedule the meeting.
+4. Ask for their preferred time.
+5. Optionally ask if they'd like to add a meeting title/subject. If they decline, that's fine.
+6. Summarize ALL collected details back to the user clearly and ask for explicit confirmation (e.g. "Does that sound right?").
+7. ONLY after the user confirms, call the `create_calendar_event` function with the collected details.
+8. After the function succeeds, let the user know the meeting has been scheduled and they'll receive a calendar invite at their email.
 
 Important rules:
 - Keep responses concise (1-2 sentences) since this is a voice conversation.
@@ -30,18 +31,20 @@ Important rules:
 - Convert times to 24-hour HH:MM format (e.g. "3pm" becomes "15:00").
 - NEVER call the function until the user explicitly confirms the details.
 - If the user wants to change something, accommodate the change and re-confirm.
-- Be natural, warm, and conversational."""
+- Be natural, warm, and conversational.
+- When asking for an email, if the user spells it out (e.g. "john at gmail dot com"), convert it to the proper format (john@gmail.com)."""
 
 SCHEDULING_TOOLS = [
     types.Tool(
         function_declarations=[
             types.FunctionDeclaration(
                 name="create_calendar_event",
-                description="Creates a calendar event with the scheduling details collected from the user.",
+                description="Creates a calendar event and sends an invite to the user's email.",
                 parameters=types.Schema(
                     type="OBJECT",
                     properties={
                         "name": types.Schema(type="STRING", description="The user's name"),
+                        "email": types.Schema(type="STRING", description="The user's email address for the calendar invite"),
                         "date": types.Schema(type="STRING", description="Meeting date in YYYY-MM-DD format"),
                         "time": types.Schema(type="STRING", description="Meeting time in HH:MM format (24-hour)"),
                         "title": types.Schema(
@@ -49,7 +52,7 @@ SCHEDULING_TOOLS = [
                             description="Optional meeting title or subject",
                         ),
                     },
-                    required=["name", "date", "time"],
+                    required=["name", "email", "date", "time"],
                 ),
             )
         ]
@@ -66,6 +69,7 @@ class GeminiLiveSession:
         self.on_tool_call = on_tool_call
         self.on_status = on_status
         self._session = None
+        self._ctx_manager = None
         self._receive_task: Optional[asyncio.Task] = None
         self._running = False
 
@@ -86,10 +90,11 @@ class GeminiLiveSession:
             output_audio_transcription=types.AudioTranscriptionConfig(),
         )
 
-        self._session = await client.aio.live.connect(
+        self._ctx_manager = client.aio.live.connect(
             model=settings.gemini_model,
             config=config,
         )
+        self._session = await self._ctx_manager.__aenter__()
         self._running = True
         self._receive_task = asyncio.create_task(self._receive_loop())
 
@@ -109,43 +114,55 @@ class GeminiLiveSession:
             return
 
         try:
-            async for response in self._session.receive():
-                if not self._running:
-                    break
+            while self._running:
+                try:
+                    async for response in self._session.receive():
+                        if not self._running:
+                            break
 
-                if response.server_content:
-                    content = response.server_content
+                        if response.server_content:
+                            content = response.server_content
 
-                    if content.model_turn and content.model_turn.parts:
-                        for part in content.model_turn.parts:
-                            if part.inline_data and part.inline_data.data:
-                                audio_b64 = base64.b64encode(part.inline_data.data).decode("utf-8")
-                                await self.on_audio(audio_b64)
+                            if content.model_turn and content.model_turn.parts:
+                                for part in content.model_turn.parts:
+                                    if part.inline_data and part.inline_data.data:
+                                        audio_b64 = base64.b64encode(part.inline_data.data).decode("utf-8")
+                                        await self.on_audio(audio_b64)
 
-                    if content.input_transcription and content.input_transcription.text:
-                        await self.on_transcript("user", content.input_transcription.text)
+                            if content.input_transcription and content.input_transcription.text:
+                                await self.on_transcript("user", content.input_transcription.text)
 
-                    if content.output_transcription and content.output_transcription.text:
-                        await self.on_transcript("assistant", content.output_transcription.text)
+                            if content.output_transcription and content.output_transcription.text:
+                                await self.on_transcript("assistant", content.output_transcription.text)
 
-                if response.tool_call:
-                    for fc in response.tool_call.function_calls:
-                        logger.info(f"Tool call: {fc.name}({fc.args})")
-                        result = await self.on_tool_call(fc.name, fc.args)
-                        await self._session.send_tool_response(
-                            function_responses=[
-                                types.FunctionResponse(
-                                    name=fc.name,
-                                    id=fc.id,
-                                    response={"result": result},
+                        if response.tool_call:
+                            for fc in response.tool_call.function_calls:
+                                logger.info(f"Tool call: {fc.name}({fc.args})")
+                                result = await self.on_tool_call(fc.name, fc.args)
+                                await self._session.send_tool_response(
+                                    function_responses=[
+                                        types.FunctionResponse(
+                                            name=fc.name,
+                                            id=fc.id,
+                                            response={"result": result},
+                                        )
+                                    ]
                                 )
-                            ]
-                        )
 
+                except StopAsyncIteration:
+                    pass
+
+                if self._running:
+                    logger.debug("Receive iterator ended, re-entering receive loop")
+                    await asyncio.sleep(0.1)
+
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             logger.error(f"Gemini receive loop error: {e}")
         finally:
-            await self.on_status("disconnected")
+            if self._running:
+                await self.on_status("disconnected")
 
     async def disconnect(self):
         self._running = False
@@ -155,10 +172,11 @@ class GeminiLiveSession:
                 await self._receive_task
             except asyncio.CancelledError:
                 pass
-        if self._session:
+        if self._ctx_manager:
             try:
-                await self._session.close()
+                await self._ctx_manager.__aexit__(None, None, None)
             except Exception:
                 pass
+            self._ctx_manager = None
             self._session = None
         logger.info("Gemini Live session disconnected")
