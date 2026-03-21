@@ -54,7 +54,7 @@ export function VoiceAgent() {
             </div>
             <div className="min-w-0">
               <h1 className="text-sm font-semibold text-zinc-100 leading-tight truncate">
-                Azamin Scheduler
+                Calendar Scheduler Agent
               </h1>
               <div className="flex items-center gap-1 text-[10px] text-violet-400/70">
                 <AutoAwesomeIcon sx={{ fontSize: 10 }} />
@@ -95,7 +95,7 @@ export function VoiceAgent() {
         </motion.div>
 
         {/* ── Steps progress bar ── */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05 }}
@@ -140,7 +140,7 @@ export function VoiceAgent() {
               transition={{ duration: 0.5, ease: "easeOut" }}
             />
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* ── Conversation ── */}
         <motion.div
