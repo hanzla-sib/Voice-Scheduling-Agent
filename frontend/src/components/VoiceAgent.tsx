@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+
 import AddIcon from "@mui/icons-material/Add";
 import { MicButton } from "./MicButton";
 import { TranscriptPanel } from "./TranscriptPanel";
@@ -11,14 +10,7 @@ import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 
 export function VoiceAgent() {
   const { isActive, isConnecting, messages, scheduleInfo, toggle, startNewMeeting } = useVoiceAgent();
-  const steps = [
-    { key: "name", label: "Name", done: Boolean(scheduleInfo.name) },
-    { key: "email", label: "Email", done: Boolean(scheduleInfo.email) },
-    { key: "date", label: "Date", done: Boolean(scheduleInfo.date) },
-    { key: "time", label: "Time", done: Boolean(scheduleInfo.time) },
-    { key: "confirm", label: "Scheduled", done: Boolean(scheduleInfo.confirmed) },
-  ];
-  const doneCount = steps.filter((s) => s.done).length;
+
 
   return (
     <div className="h-screen bg-zinc-950 text-white relative overflow-hidden flex flex-col">
