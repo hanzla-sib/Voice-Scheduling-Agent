@@ -1,6 +1,7 @@
 # Voice Scheduling Agent
 
 Real-time voice scheduling assistant built with:
+
 - `FastAPI` backend
 - `Google Gemini 2.5 Flash Live API` for live conversation
 - `React + MUI + Framer Motion + shadcn/ui` frontend
@@ -25,14 +26,14 @@ Real-time voice scheduling assistant built with:
 1. Open the deployed URL.
 2. Click the mic button to start.
 3. Speak details, for example:
-   - "My name is Hanz."
-   - "Schedule for 2026-03-25 at 16:30."
-   - "Title is Product Sync."
-   - "Invite hanzlasib24@gmail.com."
+  - "My name is Hanz."
+  - "Schedule for 2026-03-25 at 16:30."
+  - "Title is Product Sync."
+  - "Invite [hanzlasib24@gmail.com](mailto:hanzlasib24@gmail.com)."
 4. Confirm when the assistant asks.
 5. Verify:
-   - Event is created in your Google Calendar.
-   - Invite email is received by the attendee.
+  - Event is created in your Google Calendar.
+  - Invite email is received by the attendee.
 
 ## Local Setup (Optional)
 
@@ -47,6 +48,7 @@ cp .env.example .env
 ```
 
 Update `backend/.env`:
+
 - `GEMINI_API_KEY`
 - `GOOGLE_SERVICE_ACCOUNT_PATH` (usually `service-account.json`)
 - `GOOGLE_CALENDAR_ID` (your calendar email or ID)
@@ -74,14 +76,13 @@ Open `http://localhost:5173`.
 This project uses a two-part scheduling flow:
 
 1. **Event Creation (Google Calendar API)**
-   - Backend attempts to create the event on your configured calendar.
-   - For service accounts, event creation works after sharing your calendar with the service account email.
-
+  - Backend attempts to create the event on your configured calendar.
+  - For service accounts, event creation works after sharing your calendar with the service account email.
 2. **Invite Delivery**
-   - If service account attendee notifications are blocked (`forbiddenForServiceAccounts`), backend falls back safely:
-     - creates event without API attendee notification
-     - sends attendee a proper `ICS` invite email via Gmail SMTP
-   - This ensures invite delivery for personal Gmail scenarios where service accounts cannot directly send attendee invites.
+  - If service account attendee notifications are blocked (`forbiddenForServiceAccounts`), backend falls back safely:
+    - creates event without API attendee notification
+    - sends attendee a proper `ICS` invite email via Gmail SMTP
+  - This ensures invite delivery for personal Gmail scenarios where service accounts cannot directly send attendee invites.
 
 ## Non-Voice Sample Test (Recommended)
 
@@ -93,6 +94,7 @@ python scripts/sample_invite_test.py
 ```
 
 This script:
+
 - creates a sample event (auto date/time in near future)
 - sends invite to `hanzlasib24@gmail.com`
 - prints event ID, link, and invite status
@@ -100,7 +102,9 @@ This script:
 ## Evidence (Logs / Screenshots / Video)
 
 Add your proof artifacts here:
+
 - Screenshot of created event in Google Calendar
 - Screenshot of invite email in inbox
 - Terminal output of `sample_invite_test.py`
 - Optional Loom demo link: `ADD_LOOM_LINK_HERE`
+

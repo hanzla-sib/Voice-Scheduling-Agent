@@ -20,6 +20,7 @@ COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 ENV SERVE_FRONTEND=true
 ENV FRONTEND_DIST_PATH=./frontend/dist
 
+# DigitalOcean App Platform (and others) set PORT at runtime — default 8000 for local/docker-compose
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD sh -c "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --ws-ping-interval 30 --ws-ping-timeout 120"

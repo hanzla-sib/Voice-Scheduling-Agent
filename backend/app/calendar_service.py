@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import logging
 from datetime import datetime, timedelta
@@ -23,21 +24,35 @@ TOKEN_PATH = "token.json"
 def _get_calendar_service():
     """Build a Google Calendar API service.
 
-    Prefers service account (no user interaction needed).
-    Falls back to OAuth 2.0 desktop flow if service account not found.
+    Priority:
+    1. GOOGLE_SERVICE_ACCOUNT_JSON env var (for cloud deploy)
+    2. Service account file on disk
+    3. OAuth 2.0 desktop flow (local dev fallback)
     """
     settings = get_settings()
 
-    # Option 1: Service Account (recommended for production)
+    # Option 1: Inline JSON from env var (cloud-friendly)
+    if settings.google_service_account_json:
+        try:
+            sa_info = json.loads(settings.google_service_account_json)
+            creds = service_account.Credentials.from_service_account_info(
+                sa_info, scopes=SCOPES
+            )
+            logger.info(f"Using service account (env): {creds.service_account_email}")
+            return build("calendar", "v3", credentials=creds)
+        except Exception as e:
+            logger.error(f"Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+
+    # Option 2: Service account file on disk
     sa_path = settings.google_service_account_path
     if os.path.exists(sa_path):
         creds = service_account.Credentials.from_service_account_file(
             sa_path, scopes=SCOPES
         )
-        logger.info(f"Using service account: {creds.service_account_email}")
+        logger.info(f"Using service account (file): {creds.service_account_email}")
         return build("calendar", "v3", credentials=creds)
 
-    # Option 2: OAuth 2.0 Desktop flow (fallback)
+    # Option 3: OAuth 2.0 Desktop flow (fallback)
     creds = None
     if os.path.exists(TOKEN_PATH):
         creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
@@ -49,9 +64,9 @@ def _get_calendar_service():
             credentials_path = settings.google_calendar_credentials_path
             if not os.path.exists(credentials_path):
                 raise FileNotFoundError(
-                    f"No credentials found. Place either:\n"
-                    f"  - Service account key at '{sa_path}' (recommended), or\n"
-                    f"  - OAuth client JSON at '{credentials_path}'"
+                    f"No credentials found. Set GOOGLE_SERVICE_ACCOUNT_JSON env var, "
+                    f"or place service account key at '{sa_path}', "
+                    f"or OAuth client JSON at '{credentials_path}'"
                 )
             flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
             creds = flow.run_local_server(port=9090, open_browser=True)
