@@ -8,8 +8,10 @@ class Settings(BaseSettings):
 
     # Service account JSON key file (recommended)
     google_service_account_path: str = "service-account.json"
-    # Base64-encoded service account JSON (for cloud deploy where you can't mount files)
+    # Raw JSON string (single line) — set in cloud dashboard as GOOGLE_SERVICE_ACCOUNT_JSON
     google_service_account_json: str = ""
+    # Base64-encoded JSON — easier on some hosts (GOOGLE_SERVICE_ACCOUNT_JSON_B64)
+    google_service_account_json_b64: str = ""
     # The calendar ID to create events on (your email, or a specific calendar ID)
     google_calendar_id: str = "primary"
     # Timezone for events

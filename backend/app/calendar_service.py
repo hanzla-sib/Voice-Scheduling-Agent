@@ -13,6 +13,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
 from app.config import get_settings
+from app.credentials_bootstrap import read_service_account_json_from_environment
 from app.email_invite import send_calendar_invite
 
 logger = logging.getLogger(__name__)
@@ -25,23 +26,30 @@ def _get_calendar_service():
     """Build a Google Calendar API service.
 
     Priority:
-    1. GOOGLE_SERVICE_ACCOUNT_JSON env var (for cloud deploy)
+    1. GOOGLE_SERVICE_ACCOUNT_JSON_B64 or GOOGLE_SERVICE_ACCOUNT_JSON (cloud deploy)
     2. Service account file on disk
     3. OAuth 2.0 desktop flow (local dev fallback)
     """
     settings = get_settings()
 
-    # Option 1: Inline JSON from env var (cloud-friendly)
-    if settings.google_service_account_json:
+    # Option 1: Inline JSON from env (cloud-friendly)
+    json_str = read_service_account_json_from_environment()
+    if json_str:
         try:
-            sa_info = json.loads(settings.google_service_account_json)
+            sa_info = json.loads(json_str)
             creds = service_account.Credentials.from_service_account_info(
                 sa_info, scopes=SCOPES
             )
             logger.info(f"Using service account (env): {creds.service_account_email}")
             return build("calendar", "v3", credentials=creds)
+        except json.JSONDecodeError as e:
+            logger.error(
+                "Failed to parse service account JSON from env. "
+                "Use one line JSON or GOOGLE_SERVICE_ACCOUNT_JSON_B64 (base64 of the file). "
+                f"Error: {e}"
+            )
         except Exception as e:
-            logger.error(f"Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+            logger.error(f"Failed to load service account from env: {e}")
 
     # Option 2: Service account file on disk
     sa_path = settings.google_service_account_path
@@ -64,9 +72,11 @@ def _get_calendar_service():
             credentials_path = settings.google_calendar_credentials_path
             if not os.path.exists(credentials_path):
                 raise FileNotFoundError(
-                    f"No credentials found. Set GOOGLE_SERVICE_ACCOUNT_JSON env var, "
-                    f"or place service account key at '{sa_path}', "
-                    f"or OAuth client JSON at '{credentials_path}'"
+                    "No Google Calendar credentials. On the deployed app, set ONE of:\n"
+                    "  • GOOGLE_SERVICE_ACCOUNT_JSON — full JSON on one line\n"
+                    "  • GOOGLE_SERVICE_ACCOUNT_JSON_B64 — base64 of the JSON file (most reliable)\n"
+                    "  • GOOGLE_SERVICE_ACCOUNT_JSON_FILE — path to a mounted secret file\n"
+                    f"Locally: place '{sa_path}' or OAuth JSON at '{credentials_path}'."
                 )
             flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
             creds = flow.run_local_server(port=9090, open_browser=True)

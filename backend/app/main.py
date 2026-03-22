@@ -6,10 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+from app.credentials_bootstrap import materialize_service_account_file
 from app.config import get_settings
 from app.ws_handler import router as ws_router
 
 logging.basicConfig(level=logging.INFO)
+
+# Docker / DigitalOcean: write service-account.json from GOOGLE_SERVICE_ACCOUNT_JSON* before first API use
+materialize_service_account_file()
 
 settings = get_settings()
 
@@ -41,20 +45,29 @@ async def health_check():
 
 @app.get("/api/calendar/status")
 async def calendar_status():
-    """Check if Google Calendar is configured and authorized."""
-    import os
+    """Check if Google Calendar service account is available (deploy-friendly)."""
     settings = get_settings()
-    has_credentials = os.path.exists(settings.google_calendar_credentials_path)
+    sa_path = settings.google_service_account_path
+    has_sa_file = os.path.isfile(sa_path)
+    from app.credentials_bootstrap import read_service_account_json_from_environment
+
+    has_sa_env = bool(read_service_account_json_from_environment().strip())
+    has_oauth = os.path.exists(settings.google_calendar_credentials_path)
     has_token = os.path.exists("token.json")
+    configured = has_sa_file or has_sa_env or has_token
+
     return {
-        "credentials_file": has_credentials,
-        "authorized": has_token,
-        "instructions": (
-            "1. Go to Google Cloud Console > APIs & Services > Credentials. "
-            "2. Create an OAuth 2.0 Client ID (Desktop app). "
-            "3. Download the JSON and save as 'credentials.json' in the backend/ folder. "
-            "4. Run the server and call POST /api/calendar/authorize to complete OAuth."
-        ) if not has_credentials else None,
+        "service_account_file": has_sa_file,
+        "service_account_from_env": has_sa_env,
+        "oauth_credentials_file": has_oauth,
+        "oauth_token": has_token,
+        "calendar_ready": configured,
+        "hint": None
+        if configured
+        else (
+            "Set GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SERVICE_ACCOUNT_JSON_B64, or "
+            "GOOGLE_SERVICE_ACCOUNT_JSON_FILE on the server, then redeploy."
+        ),
     }
 
 

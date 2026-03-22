@@ -44,6 +44,8 @@ yarn-error.log*
 # Google Calendar credentials (sensitive)
 credentials.json
 service-account.json
+# Generated for cloud paste — do not commit
+.google_service_account_b64_for_deploy.txt
 token.json
 token.pickle
 
