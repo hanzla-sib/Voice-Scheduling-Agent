@@ -11,22 +11,17 @@ Real-time voice scheduling assistant built with:
 ## What This Agent Does
 
 - Starts a live conversation with the user
-- Collects `name`, `email`, `date`, `time`, and optional `meeting title`
+- Collects `name`, `email`, `date`, `time`, and `meeting title`
 - Confirms details before scheduling
 - Creates a real Google Calendar event
 - Sends invite email to attendee (works for personal Gmail too via SMTP ICS)
-
-## Deployed URL
-
-- Frontend/Agent URL: `ADD_YOUR_DEPLOYED_URL_HERE`
-- Backend URL (if separate): `ADD_YOUR_BACKEND_URL_HERE`
 
 ## How To Test (Hosted)
 
 1. Open the deployed URL.
 2. Click the mic button to start.
 3. Speak details, for example:
-  - "My name is Hanz."
+  - "My name is Hanzla."
   - "Schedule for 2026-03-25 at 16:30."
   - "Title is Product Sync."
   - "Invite [hanzlasib24@gmail.com](mailto:hanzlasib24@gmail.com)."
