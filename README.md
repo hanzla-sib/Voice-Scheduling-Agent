@@ -34,7 +34,7 @@ Real-time voice scheduling assistant built with:
   - Event is created in your Google Calendar.
   - Invite email is received by the attendee.
 
-## Local Setup 
+## Local Setup
 
 ### 1) Backend
 
@@ -98,12 +98,23 @@ This script:
 - sends invite to `hanzlasib24@gmail.com`
 - prints event ID, link, and invite status
 
-## Evidence (Logs / Screenshots / Video)
+## Screenshots
 
-Add your proof artifacts here:
+Images are loaded from the [`screenshots/`](screenshots/) folder in this repo. If they don’t show on GitHub, confirm `screenshots/*.png` is **committed and pushed** (`git add screenshots/` then `git push`).
 
-- Screenshot of created event in Google Calendar
-- Screenshot of invite email in inbox
-- Terminal output of `sample_invite_test.py`
-- Optional Loom demo link: `ADD_LOOM_LINK_HERE`
+### 1. Main UI
+
+![Voice Scheduler — main view](./screenshots/1.png)
+
+### 2. Conversation & voice
+
+![Voice Scheduler — conversation](./screenshots/2.png)
+
+### 3. Meeting details & progress
+
+![Voice Scheduler — meeting details](./screenshots/3.png)
+
+### 4. Calendar / invite
+
+![Calendar or invite evidence](./screenshots/4.png)
 
