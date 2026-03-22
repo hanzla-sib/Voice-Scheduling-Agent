@@ -102,19 +102,18 @@ This script:
 
 Images are loaded from the [`screenshots/`](screenshots/) folder in this repo. If they don’t show on GitHub, confirm `screenshots/*.png` is **committed and pushed** (`git add screenshots/` then `git push`).
 
-### 1. Main UI
 
-![Voice Scheduler — main view](./screenshots/1.png)
-
-### 2. Conversation & voice
+### 1. Conversation & voice
 
 ![Voice Scheduler — conversation](./screenshots/2.png)
 
-### 3. Meeting details & progress
+### 2. Meeting details & progress
 
 ![Voice Scheduler — meeting details](./screenshots/3.png)
 
-### 4. Calendar / invite
+### 3. Calendar / invite
 
 ![Calendar or invite evidence](./screenshots/4.png)
 
+### 4. Logs
+![Voice Scheduler — main view](./screenshots/1.png)
