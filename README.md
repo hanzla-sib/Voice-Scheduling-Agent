@@ -16,23 +16,6 @@ Real-time voice scheduling assistant built with:
 - Creates a real Google Calendar event
 - Sends invite email to attendee (works for personal Gmail too via SMTP ICS)
 
-## Deployed URL
-
-- [https://voice-scheduler-c6gi7.ondigitalocean.app/](https://voice-scheduler-c6gi7.ondigitalocean.app/)
-
-## How To Test (Hosted)
-
-1. Open the deployed URL.
-2. Click the mic button to start.
-3. Speak details, for example:
-  - "My name is Hanzla."
-  - "Schedule for 2026-03-25 at 16:30."
-  - "Title is Product Sync."
-  - "Invite [hanzlasib24@gmail.com](mailto:hanzlasib24@gmail.com)."
-4. Confirm when the assistant asks.
-5. Verify:
-  - Event is created in your Google Calendar.
-  - Invite email is received by the attendee.
 
 ## Local Setup
 
